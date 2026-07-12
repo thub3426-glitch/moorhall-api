@@ -1,0 +1,36 @@
+# Netlify CLI Configuration
+# For local development and testing before deployment
+
+# Build command and directory
+[build]
+  base = "./"
+  command = "npm run build"
+  functions = "netlify/functions"
+  publish = "dist"
+
+# Development server
+[dev]
+  command = "npm run dev"
+  port = 3005
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Environment variables for local development
+# Note: Actual values should be in .env file (which is .gitignored)
+# These are just examples of variable names
+
+# Contexts for different environments
+[context.production]
+  base = "./"
+  command = "npm run build"
+  publish = "dist"
+
+[context.develop]
+  base = "./"
+  command = "npm run build"
+  publish = "dist"
+
+# Edge Functions (optional - for advanced use)
+# [edge_functions]
+#   glob = ["/api/*"]
+#   function = "api-edge"

@@ -1,0 +1,248 @@
+# Netlify Configuration for MoorHall API
+# Production-ready deployment configuration with optimizations for serverless environment
+
+# =============================================================================
+# BUILD SETTINGS
+# =============================================================================
+[build]
+  # The command to build the project
+  # IMPORTANT: DATABASE_URL must be set for Prisma client generation during build
+  # Set it in Netlify Dashboard: Site Settings → Build & deploy → Environment
+  command = "npm run db:generate && npm run build"
+  
+  # Directory to deploy (build output)
+  publish = "dist"
+  
+  # Functions directory for serverless functions
+  functions = "netlify/functions"
+  
+  # Node.js version (use LTS or stable)
+  environment = { NODE_VERSION = "20", ENVIRONMENT = "production" }
+
+# =============================================================================
+# DEVELOPMENT SERVER (for local testing with Netlify)
+# =============================================================================
+[dev]
+  # Command to run dev server locally
+  command = "npm run dev"
+  
+  # Port for development server
+  port = 3005
+  
+  # Framework detection
+  framework = "other"
+  
+  # Publish directory
+  publish = "dist"
+  
+  # Functions directory
+  functions = "netlify/functions"
+
+# =============================================================================
+# CONTEXT-SPECIFIC SETTINGS
+# =============================================================================
+
+# Production context
+[context.production]
+  command = "npm run build"
+  publish = "dist"
+  environment = { NODE_VERSION = "20", ENVIRONMENT = "production" }
+
+# Deploy preview context (for pull requests)
+[context.deploy-preview]
+  command = "npm run build"
+  publish = "dist"
+  environment = { NODE_VERSION = "20", ENVIRONMENT = "preview" }
+
+# Branch deploy context
+[context.branch-deploy]
+  command = "npm run build"
+  publish = "dist"
+  environment = { NODE_VERSION = "20", ENVIRONMENT = "staging" }
+
+# =============================================================================
+# REDIRECTS & REWRITES
+# =============================================================================
+
+# Health check endpoint (priority: highest)
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/api/health"
+  status = 200
+
+# API documentation and assets (serves Swagger UI)
+[[redirects]]
+  from = "/api-docs/*"
+  to = "/.netlify/functions/api/api-docs/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api-docs"
+  to = "/.netlify/functions/api/api-docs"
+  status = 200
+
+# All API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Root path
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/api/"
+  status = 200
+  force = true
+
+# Catch-all: Route everything else to the Express app
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# Single-page app fallback (if frontend is served from same domain)
+# Uncomment if needed and remove the catch-all above:
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+
+# =============================================================================
+# HEADERS - SECURITY & CORS
+# =============================================================================
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security Headers
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    
+    # HSTS (Strict Transport Security) - Enable after testing
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';"
+
+# API-specific headers
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    # CORS Headers (handled by backend, but ensure defaults)
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    
+    # Cache Control for API
+    Cache-Control = "max-age=0, must-revalidate"
+
+# Static assets caching (for client-side assets if any)
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# =============================================================================
+# ENVIRONMENT VARIABLES
+# =============================================================================
+# Define environment variables that should NOT be committed to git
+# Set these in the Netlify Dashboard under Settings > Build & Deploy > Environment
+
+# Production environment variables (set these in Netlify Dashboard)
+# [context.production.environment]
+#   DATABASE_URL = "your-production-database-url"
+#   JWT_SECRET = "your-production-jwt-secret"
+#   CORS_ORIGINS = "https://yourdomain.com"
+#   CLOUDINARY_NAME = "your-cloudinary-name"
+#   CLOUDINARY_API_KEY = "your-cloudinary-key"
+#   CLOUDINARY_API_SECRET = "your-cloudinary-secret"
+#   WHATSAPP_API_KEY = "your-whatsapp-key"
+#   SENDGRID_API_KEY = "your-sendgrid-key"
+
+# =============================================================================
+# PRISMA + POSTGRESQL CONFIGURATION
+# =============================================================================
+# 
+# Database Connection for Netlify Functions:
+# - Each function invocation is a separate Node.js process
+# - Prisma client initializes on first database call
+# - Connection pooling via database URL parameters is CRITICAL
+# 
+# DATABASE_URL Format:
+# postgresql://username:password@host:port/database?schema=public&sslmode=require&pool_size=2&connection_limit=2
+# 
+# Key Parameters:
+# - sslmode=require: Required for cloud databases (security)
+# - pool_size=2: Connections per pool (important for serverless)
+# - connection_limit=2: Maximum connections (prevents exhaustion)
+# - schema=public: Target schema (adjust if using multiple schemas)
+# 
+# Connection Pooling Recommendations:
+# - Use PgBouncer, Supabase connection pooling, or Railway managed pooling
+# - Netlify Functions can have ~10s execution windows before cold start penalty
+# - Never use unbounded connection pools with serverless
+#
+# Building with Prisma on Netlify:
+# - DATABASE_URL MUST be set during build (for Prisma client generation)
+# - Use a read-only database URL or create a separate build account with limited permissions
+# - The build command includes: npm run db:generate
+# 
+# =============================================================================
+# PLUGINS & INTEGRATIONS
+# =============================================================================
+
+# Enable Netlify Analytics (optional, requires paid plan)
+# [analytics]
+#   enabled = true
+
+# =============================================================================
+# FUNCTION SETTINGS
+# =============================================================================
+
+# Function configuration for Netlify Functions
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@prisma/client", "express", "serverless-http"]
+
+# =============================================================================
+# ERROR PAGES
+# =============================================================================
+
+# Custom error pages (if you have them)
+# [[redirects]]
+#   from = "/*"
+#   to = "/error.html"
+#   status = 404
+
+# =============================================================================
+# EDGE FUNCTIONS (Optional - for advanced use)
+# =============================================================================
+# Edge functions run on Netlify's edge network for lower latency
+# Create files in netlify/edge-functions/ directory
+
+# [[edge_functions]]
+#   path = "/api/*"
+#   function = "api-edge"
+
+# =============================================================================
+# NOTES FOR DEPLOYMENT
+# =============================================================================
+# 1. Set all environment variables in Netlify Dashboard
+# 2. Connect your GitHub repository to Netlify
+# 3. Netlify will automatically deploy on push to main branch
+# 4. Configure custom domain in Site Settings > Domain Management
+# 5. Enable automatic HTTPS in Netlify Dashboard
+# 6. Monitor function logs: https://app.netlify.com > your-site > Functions
