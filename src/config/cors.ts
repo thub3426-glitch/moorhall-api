@@ -1,10 +1,12 @@
 import { CorsOptions } from 'cors';
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  'https://www.moorhallrestaurant.com',
+  'https://moorhallrestaurant.com',
+  'https://api.moorhallrestaurant.com',
   'https://moorhall.netlify.app',
   'https://moorhall-ui.netlify.app',
   'https://moorhall-api.netlify.app',
-  'https://api.moorhallrestaurant.com',
   'http://localhost:5173',
   'http://localhost:3000',
 ];
