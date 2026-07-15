@@ -8,7 +8,7 @@
   # The command to build the project
   # IMPORTANT: DATABASE_URL must be set for Prisma client generation during build
   # Set it in Netlify Dashboard: Site Settings → Build & deploy → Environment
-  command = "npm run db:generate && npm run db:push && npm run db:seed && npm run build"
+  command = "npm run build:netlify"
   
   # Directory to deploy (build output)
   publish = "dist"
@@ -44,19 +44,19 @@
 
 # Production context
 [context.production]
-  command = "npm run build"
+  command = "npm run build:netlify"
   publish = "dist"
   environment = { NODE_VERSION = "20", ENVIRONMENT = "production" }
 
 # Deploy preview context (for pull requests)
 [context.deploy-preview]
-  command = "npm run build"
+  command = "npm run build:netlify"
   publish = "dist"
   environment = { NODE_VERSION = "20", ENVIRONMENT = "preview" }
 
 # Branch deploy context
 [context.branch-deploy]
-  command = "npm run build"
+  command = "npm run build:netlify"
   publish = "dist"
   environment = { NODE_VERSION = "20", ENVIRONMENT = "staging" }
 

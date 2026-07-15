@@ -305,7 +305,7 @@ const FEATURED_SERVICES = [
     slug: 'fine-dining-experience',
     type: 'EVENT_SERVICE',
     description: 'Indulge in our exquisite fine dining service featuring world-class cuisine and impeccable service.',
-    imageUrl: '/assets/chief.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&h=600',
     isActive: true,
   },
   {
@@ -313,7 +313,7 @@ const FEATURED_SERVICES = [
     slug: 'exclusive-reservations',
     type: 'CUSTOMER_CONVENIENCE',
     description: 'Secure your table at the most sought-after restaurant with our premium reservation service.',
-    imageUrl: '/assets/menu.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&h=600',
     isActive: true,
   },
   {
@@ -321,7 +321,7 @@ const FEATURED_SERVICES = [
     slug: 'catering-services',
     type: 'OUTSIDE_CATERING',
     description: 'Professional catering for any occasion – weddings, corporate events, and private celebrations.',
-    imageUrl: '/assets/lunch.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&h=600',
     isActive: true,
   },
   {
@@ -329,7 +329,7 @@ const FEATURED_SERVICES = [
     slug: 'private-events',
     type: 'EVENT_SERVICE',
     description: 'Create unforgettable moments with our exclusive private event spaces and personalized service.',
-    imageUrl: '/assets/lunch1.jpg',
+    imageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&h=600',
     isActive: true,
   },
 ];
