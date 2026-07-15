@@ -14,13 +14,14 @@ export const initializeMiddlewares = (app: Express): void => {
   app.set('trust proxy', 1);
   app.set('x-powered-by', false);
 
-  app.use(helmet());
-  app.use(compression());
-  app.options('*', cors(getCorsOptions()));
-  app.use(cors(getCorsOptions()));
-  app.use(express.json({ limit: '10kb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-  app.use(cookieParser());
+ app.use(helmet());
+app.use(compression());
+
+app.use(cors(getCorsOptions()));
+
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
   app.use(requestIdMiddleware);
   app.use(timeoutMiddleware(30000));
