@@ -16,6 +16,7 @@ export const initializeMiddlewares = (app: Express): void => {
 
   app.use(helmet());
   app.use(compression());
+  app.options('*', cors(getCorsOptions()));
   app.use(cors(getCorsOptions()));
   app.use(express.json({ limit: '10kb' }));
   app.use(express.urlencoded({ extended: true, limit: '10kb' }));
